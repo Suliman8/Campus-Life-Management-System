@@ -1,0 +1,283 @@
+version: '3.8'
+
+services:
+  # API Gateway
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    ports:
+      - "80:80"
+    depends_on:
+      - auth-service
+      - student-service
+      - course-service
+      - attendance-service
+      - grades-service
+      - events-service
+      - cafeteria-service
+      - library-service
+      - notification-service
+      - payment-service
+      - analytics-service
+    networks:
+      - campus-network
+
+  # Authentication Service
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - JWT_SECRET=campus_secret_key_2024
+      - DB_HOST=postgres-db
+      - DB_PORT=5432
+      - DB_NAME=campus_db
+      - DB_USER=campus_user
+      - DB_PASSWORD=campus_pass
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - postgres-db
+      - redis
+    networks:
+      - campus-network
+
+  # Student Service
+  student-service:
+    build: ./student-service
+    container_name: student-service
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=postgres-db
+      - DB_PORT=5432
+      - DB_NAME=campus_db
+      - DB_USER=campus_user
+      - DB_PASSWORD=campus_pass
+    depends_on:
+      - postgres-db
+    networks:
+      - campus-network
+
+  # Course Service
+  course-service:
+    build: ./course-service
+    container_name: course-service
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=postgres-db
+      - DB_PORT=5432
+      - DB_NAME=campus_db
+      - DB_USER=campus_user
+      - DB_PASSWORD=campus_pass
+    depends_on:
+      - postgres-db
+    networks:
+      - campus-network
+
+  # Attendance Service
+  attendance-service:
+    build: ./attendance-service
+    container_name: attendance-service
+    ports:
+      - "3004:3004"
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=postgres-db
+      - DB_PORT=5432
+      - DB_NAME=campus_db
+      - DB_USER=campus_user
+      - DB_PASSWORD=campus_pass
+    depends_on:
+      - postgres-db
+    networks:
+      - campus-network
+
+  # Grades Service
+  grades-service:
+    build: ./grades-service
+    container_name: grades-service
+    ports:
+      - "3005:3005"
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=postgres-db
+      - DB_PORT=5432
+      - DB_NAME=campus_db
+      - DB_USER=campus_user
+      - DB_PASSWORD=campus_pass
+    depends_on:
+      - postgres-db
+    networks:
+      - campus-network
+
+  # Events Service
+  events-service:
+    build: ./events-service
+    container_name: events-service
+    ports:
+      - "3006:3006"
+    environment:
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://mongodb:27017/campus_events
+    depends_on:
+      - mongodb
+    networks:
+      - campus-network
+
+  # Cafeteria Service
+  cafeteria-service:
+    build: ./cafeteria-service
+    container_name: cafeteria-service
+    ports:
+      - "3007:3007"
+    environment:
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://mongodb:27017/campus_cafeteria
+    depends_on:
+      - mongodb
+    networks:
+      - campus-network
+
+  # Library Service
+  library-service:
+    build: ./library-service
+    container_name: library-service
+    ports:
+      - "3008:3008"
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=postgres-db
+      - DB_PORT=5432
+      - DB_NAME=campus_db
+      - DB_USER=campus_user
+      - DB_PASSWORD=campus_pass
+    depends_on:
+      - postgres-db
+    networks:
+      - campus-network
+
+  # Notification Service
+  notification-service:
+    build: ./notification-service
+    container_name: notification-service
+    ports:
+      - "3009:3009"
+    environment:
+      - NODE_ENV=production
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    networks:
+      - campus-network
+
+  # Payment Service
+  payment-service:
+    build: ./payment-service
+    container_name: payment-service
+    ports:
+      - "3010:3010"
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=postgres-db
+      - DB_PORT=5432
+      - DB_NAME=campus_db
+      - DB_USER=campus_user
+      - DB_PASSWORD=campus_pass
+    depends_on:
+      - postgres-db
+    networks:
+      - campus-network
+
+  # Admin Dashboard
+  admin-dashboard:
+    build: ./admin-dashboard
+    container_name: admin-dashboard
+    ports:
+      - "3011:80"
+    environment:
+      - REACT_APP_API_URL=http://localhost
+    networks:
+      - campus-network
+
+  # Student Portal
+  student-portal:
+    build: ./student-portal
+    container_name: student-portal
+    ports:
+      - "3012:80"
+    environment:
+      - REACT_APP_API_URL=http://localhost
+    networks:
+      - campus-network
+
+  # Analytics Service
+  analytics-service:
+    build: ./analytics-service
+    container_name: analytics-service
+    ports:
+      - "3013:3013"
+    environment:
+      - DB_HOST=postgres-db
+      - DB_PORT=5432
+      - DB_NAME=campus_db
+      - DB_USER=campus_user
+      - DB_PASSWORD=campus_pass
+    depends_on:
+      - postgres-db
+    networks:
+      - campus-network
+
+  # PostgreSQL Database
+  postgres-db:
+    image: postgres:15-alpine
+    container_name: postgres-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=campus_db
+      - POSTGRES_USER=campus_user
+      - POSTGRES_PASSWORD=campus_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - campus-network
+
+  # MongoDB Database
+  mongodb:
+    image: mongo:6-jammy
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=campus_data
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - campus-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - campus-network
+
+networks:
+  campus-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  mongo_data:
+  redis_data:
